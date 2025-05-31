@@ -1,6 +1,6 @@
 import { StarIcon } from '@heroicons/react/24/solid';
 import { Link } from 'react-router-dom';
-import type { Movie } from '@/types/Movie';
+import type { Movie } from '@/types/movie';
 
 interface MovieCardProps {
   movie: Movie;

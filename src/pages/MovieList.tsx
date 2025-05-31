@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import MovieCard from '@/components/MovieCard';
-import type { Movie } from '@/types/Movie';
+import MovieListView from '@/components/MovieList/MovieListView';
+import type { Movie } from '@/types/movie';
 
 export default function MovieList() {
   const [movieList, setMovieList] = useState<Movie[]>([]);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -12,6 +13,8 @@ export default function MovieList() {
     let isMounted = true;
 
     const fetchData = async () => {
+      setStatus('loading');
+
       try {
         const options = {
           method: 'GET',
@@ -31,10 +34,12 @@ export default function MovieList() {
 
         if (isMounted) {
           setMovieList(data.results);
+          setStatus('success');
         }
       } catch (err) {
         if (err instanceof Error && err.name !== 'AbortError') {
           console.error(err);
+          setStatus('error');
         }
       }
     };
@@ -57,11 +62,7 @@ export default function MovieList() {
 
       <main className="max-w-7xl mx-auto py-10">
         <h2 className="text-2xl font-semibold mb-6">인기 영화</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {movieList.map((movie) => (
-            <MovieCard key={movie.id} movie={movie} />
-          ))}
-        </div>
+        <MovieListView status={status} movieList={movieList} />
       </main>
     </div>
   );
