@@ -1,5 +1,4 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import {
   ChevronLeftIcon,
   CalendarIcon,
@@ -10,55 +9,13 @@ import {
 import { Button } from '@/components/ui/button';
 import type { MovieDetail } from '@/types/movie';
 import MovieDetailSkeleton from '@/components/MovieDetail/MovieDetailSkeleton';
+import { useFetch } from '@/hooks/useFetch';
+import { api } from '@/api/api';
 
 export default function MovieDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [movie, setMovie] = useState<MovieDetail | null>(null);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    let isMounted = true;
-
-    const fetchData = async () => {
-      setStatus('loading');
-
-      try {
-        const options = {
-          method: 'GET',
-          headers: {
-            accept: 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_TMDB_ACCESS_TOKEN}`,
-          },
-          signal,
-        };
-
-        const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?language=ko-KR`, options);
-
-        const data = await res.json();
-
-        if (isMounted) {
-          setMovie(data);
-          setStatus('success');
-        }
-      } catch (err) {
-        if (err instanceof Error && err.name !== 'AbortError') {
-          console.error(err);
-          setStatus('error');
-        }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      isMounted = false;
-      controller.abort();
-    };
-  }, [id]);
+  const { data: movie, status } = useFetch<MovieDetail>(api.detail(id!), !!id);
 
   if (status === 'loading') return <MovieDetailSkeleton />;
   if (status === 'error') return <p>영화 정보를 불러오지 못했습니다.</p>;
