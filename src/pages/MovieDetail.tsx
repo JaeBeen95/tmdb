@@ -16,18 +16,39 @@ export default function MovieDetail() {
   const [movie, setMovie] = useState<MovieDetail | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    let isMounted = true;
+
     const options = {
       method: 'GET',
       headers: {
         accept: 'application/json',
         Authorization: `Bearer ${import.meta.env.VITE_TMDB_ACCESS_TOKEN}`,
       },
+      signal,
     };
 
-    fetch(`https://api.themoviedb.org/3/movie/${id}?language=ko-KR`, options)
-      .then((res) => res.json())
-      .then((res) => setMovie(res))
-      .catch((err) => console.error(err));
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?language=ko-KR`, options);
+        const data = await res.json();
+
+        if (isMounted) {
+          setMovie(data);
+        }
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') console.error(err);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [id]);
 
   if (!movie) return <div>Loading...</div>;

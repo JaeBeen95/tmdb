@@ -6,18 +6,45 @@ export default function MovieList() {
   const [movieList, setMovieList] = useState<Movie[]>([]);
 
   useEffect(() => {
-    const options = {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-        Authorization: `Bearer ${import.meta.env.VITE_TMDB_ACCESS_TOKEN}`,
-      },
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        const options = {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_TMDB_ACCESS_TOKEN}`,
+          },
+          signal,
+        };
+
+        const res = await fetch(
+          'https://api.themoviedb.org/3/movie/popular?language=ko-KR&page=1',
+          options
+        );
+
+        const data = await res.json();
+
+        if (isMounted) {
+          setMovieList(data.results);
+        }
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.error(err);
+        }
+      }
     };
 
-    fetch('https://api.themoviedb.org/3/movie/popular?language=ko-KR&page=1', options)
-      .then((res) => res.json())
-      .then((res) => setMovieList(res.results))
-      .catch((err) => console.error(err));
+    fetchData();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
 
   return (
