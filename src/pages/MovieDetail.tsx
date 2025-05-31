@@ -8,12 +8,14 @@ import {
   PlayIcon,
 } from '@heroicons/react/24/solid';
 import { Button } from '@/components/ui/button';
-import type { MovieDetail } from '@/types/Movie';
+import type { MovieDetail } from '@/types/movie';
+import MovieDetailSkeleton from '@/components/MovieDetail/MovieDetailSkeleton';
 
 export default function MovieDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [movie, setMovie] = useState<MovieDetail | null>(null);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -21,25 +23,32 @@ export default function MovieDetail() {
 
     let isMounted = true;
 
-    const options = {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-        Authorization: `Bearer ${import.meta.env.VITE_TMDB_ACCESS_TOKEN}`,
-      },
-      signal,
-    };
-
     const fetchData = async () => {
+      setStatus('loading');
+
       try {
+        const options = {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_TMDB_ACCESS_TOKEN}`,
+          },
+          signal,
+        };
+
         const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?language=ko-KR`, options);
+
         const data = await res.json();
 
         if (isMounted) {
           setMovie(data);
+          setStatus('success');
         }
       } catch (err) {
-        if (err instanceof Error && err.name !== 'AbortError') console.error(err);
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.error(err);
+          setStatus('error');
+        }
       }
     };
 
@@ -51,7 +60,9 @@ export default function MovieDetail() {
     };
   }, [id]);
 
-  if (!movie) return <div>Loading...</div>;
+  if (status === 'loading') return <MovieDetailSkeleton />;
+  if (status === 'error') return <p>영화 정보를 불러오지 못했습니다.</p>;
+  if (!movie) return <p className="text-lg">영화 정보를 찾을 수 없습니다.</p>;
 
   return (
     <div className="bg-[#0d253f] text-white min-h-screen">
