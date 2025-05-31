@@ -1,16 +1,24 @@
+import { useState, useEffect } from 'react';
 import MovieCard from '@/components/MovieCard';
-
-const dummyList = Array.from({ length: 12 }, (_, i) => ({
-  id: i + 1,
-  title: `Movie Title ${i + 1}`,
-  original_title: `Original Title ${i + 1}`,
-  poster_path: `https://image.tmdb.org/t/p/w500/62HCnUTziyWcpDaBO2i1DX17ljH.jpg`,
-  vote_average: 7.5 + (i % 3),
-  release_date: `202${i % 10}-01-01`,
-}));
+import type { Movie } from '@/types/Movie';
 
 export default function MovieList() {
-  
+  const [movieList, setMovieList] = useState<Movie[]>([]);
+
+  useEffect(() => {
+    const options = {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        Authorization: `Bearer ${import.meta.env.VITE_TMDB_ACCESS_TOKEN}`,
+      },
+    };
+
+    fetch('https://api.themoviedb.org/3/movie/popular?language=ko-KR&page=1', options)
+      .then((res) => res.json())
+      .then((res) => setMovieList(res.results))
+      .catch((err) => console.error(err));
+  }, []);
 
   return (
     <div className="bg-[#0d253f] min-h-screen text-white">
@@ -23,7 +31,7 @@ export default function MovieList() {
       <main className="max-w-7xl mx-auto py-10">
         <h2 className="text-2xl font-semibold mb-6">인기 영화</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {dummyList.map((movie) => (
+          {movieList.map((movie) => (
             <MovieCard key={movie.id} movie={movie} />
           ))}
         </div>
