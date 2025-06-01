@@ -19,14 +19,14 @@ interface CacheItem<T> {
   cachedAt: number;
 }
 
+interface UseFetchOptions {
+  cacheMaxAge?: number;
+}
+
 const fetchCache = new Map<string, CacheItem<unknown>>();
 
 export function invalidateCache(url: string) {
   fetchCache.delete(url);
-}
-
-interface UseFetchOptions {
-  cacheMaxAge?: number;
 }
 
 export function useFetch<T>(
@@ -47,7 +47,6 @@ export function useFetch<T>(
     const cacheItem = fetchCache.get(url) as CacheItem<T>;
 
     const controller = new AbortController();
-    const signal = controller.signal;
     let isMounted = true;
     let timer: ReturnType<typeof setTimeout>;
 
@@ -64,6 +63,7 @@ export function useFetch<T>(
     const fetchData = async () => {
       setStatus('loading');
       setError(null);
+
       try {
         const response = await fetch(url, {
           method: 'GET',
@@ -71,7 +71,7 @@ export function useFetch<T>(
             accept: 'application/json',
             Authorization: `Bearer ${import.meta.env.VITE_TMDB_ACCESS_TOKEN}`,
           },
-          signal,
+          signal: controller.signal,
         });
 
         if (!response.ok) {
@@ -88,21 +88,25 @@ export function useFetch<T>(
           fetchCache.set(url, { data: result, cachedAt: Date.now() });
           setData(result);
           setStatus('success');
-
           scheduleNext(cacheMaxAge);
         }
       } catch (err: unknown) {
         if (!isMounted || (err instanceof DOMException && err.name === 'AbortError')) return;
 
         const errorDetail: ErrorDetail = { message: 'Network error' };
+
         if (typeof err === 'object' && err !== null) {
-          if ('message' in err && typeof err.message === 'string')
+          if ('message' in err && typeof err.message === 'string') {
             errorDetail.message = err.message;
-          if ('statusCode' in err && typeof err.statusCode === 'number')
+          }
+          if ('statusCode' in err && typeof err.statusCode === 'number') {
             errorDetail.statusCode = err.statusCode;
-          if ('statusText' in err && typeof err.statusText === 'string')
+          }
+          if ('statusText' in err && typeof err.statusText === 'string') {
             errorDetail.statusText = err.statusText;
+          }
         }
+
         setError(errorDetail);
         setStatus('error');
       }
