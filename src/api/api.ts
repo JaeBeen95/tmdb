@@ -1,7 +1,7 @@
-export const api = {
-  popular: (page = 1, language = 'ko-KR') =>
-    `https://api.themoviedb.org/3/movie/popular?language=${language}&page=${page}`,
+const baseUrl = 'https://api.themoviedb.org/3/movie';
 
-  detail: (id: string, language = 'ko-KR') =>
-    `https://api.themoviedb.org/3/movie/${id}?language=${language}`,
+export const api = {
+  popular: (page = 1, language = 'ko-KR') => `${baseUrl}/popular?language=${language}&page=${page}`,
+
+  detail: (id: string, language = 'ko-KR') => `${baseUrl}/${id}?language=${language}`,
 };

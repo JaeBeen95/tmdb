@@ -2,17 +2,19 @@ import { useState, useEffect } from 'react';
 
 type Status = 'idle' | 'loading' | 'error' | 'success';
 
+interface ErrorDetail {
+  message: string;
+  statusCode?: number;
+  statusText?: string;
+}
+
 interface UseFetchResult<T> {
   data: T | null;
   status: Status;
   error: ErrorDetail | null;
 }
 
-interface ErrorDetail {
-  message: string;
-  statusCode?: number;
-  statusText?: string;
-}
+const fetchCache = new Map<string, unknown>();
 
 export function useFetch<T>(url: string, enabled = true): UseFetchResult<T> {
   const [data, setData] = useState<T | null>(null);
@@ -21,6 +23,13 @@ export function useFetch<T>(url: string, enabled = true): UseFetchResult<T> {
 
   useEffect(() => {
     if (!enabled) return;
+    if (!url) return;
+
+    if (fetchCache.has(url)) {
+      setData(fetchCache.get(url) as T);
+      setStatus('success');
+      return;
+    }
 
     const controller = new AbortController();
     const signal = controller.signal;
@@ -50,17 +59,15 @@ export function useFetch<T>(url: string, enabled = true): UseFetchResult<T> {
         const data: T = await response.json();
 
         if (isMounted) {
+          fetchCache.set(url, data);
+          console.log(fetchCache);
           setData(data);
           setStatus('success');
         }
       } catch (error: unknown) {
-        if (!isMounted) return;
+        if (!isMounted || (error instanceof DOMException && error.name === 'AbortError')) return;
 
-        if (error instanceof DOMException && error.name === 'AbortError') return;
-
-        const errorDetail: ErrorDetail = {
-          message: 'Network error',
-        };
+        const errorDetail: ErrorDetail = { message: 'Network error' };
 
         if (typeof error === 'object' && error !== null) {
           if ('message' in error && typeof error.message === 'string') {
