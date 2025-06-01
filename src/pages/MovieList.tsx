@@ -1,16 +1,10 @@
-import MovieCard from '@/components/MovieCard';
-
-const dummyList = Array.from({ length: 12 }, (_, i) => ({
-  id: i + 1,
-  title: `Movie Title ${i + 1}`,
-  original_title: `Original Title ${i + 1}`,
-  poster_path: `https://image.tmdb.org/t/p/w500/62HCnUTziyWcpDaBO2i1DX17ljH.jpg`,
-  vote_average: 7.5 + (i % 3),
-  release_date: `202${i % 10}-01-01`,
-}));
+import MovieListView from '@/components/MovieList/MovieListView';
+import { useFetch } from '@/hooks/useFetch';
+import { api } from '@/api/api';
+import type { Movie } from '@/types/movie';
 
 export default function MovieList() {
-  
+  const { data: movieList, status } = useFetch<{ results: Movie[] }>(api.popular(1));
 
   return (
     <div className="bg-[#0d253f] min-h-screen text-white">
@@ -22,11 +16,7 @@ export default function MovieList() {
 
       <main className="max-w-7xl mx-auto py-10">
         <h2 className="text-2xl font-semibold mb-6">인기 영화</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {dummyList.map((movie) => (
-            <MovieCard key={movie.id} movie={movie} />
-          ))}
-        </div>
+        <MovieListView status={status} movieList={movieList?.results || []} />
       </main>
     </div>
   );
