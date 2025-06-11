@@ -1,15 +1,9 @@
 import { StarIcon } from '@heroicons/react/24/solid';
 import { Link } from 'react-router-dom';
+import type { Movie } from '@/types/movie';
 
 interface MovieCardProps {
-  movie: {
-    id: number;
-    title: string;
-    original_title: string;
-    poster_path: string;
-    vote_average: number;
-    release_date: string;
-  };
+  movie: Movie;
 }
 
 export default function MovieCard({ movie }: MovieCardProps) {
@@ -18,7 +12,11 @@ export default function MovieCard({ movie }: MovieCardProps) {
       to={`/movie/${movie.id}`}
       className="block bg-[#1c2a3a] rounded-lg overflow-hidden hover:scale-105 transition"
     >
-      <img src={movie.poster_path} alt={movie.title} className="w-full h-72 object-cover" />
+      <img
+        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+        alt={movie.title}
+        className="w-full h-72 object-cover"
+      />
       <div className="p-3">
         <h3 className="text-white font-semibold text-sm leading-tight line-clamp-2">
           {movie.title}
