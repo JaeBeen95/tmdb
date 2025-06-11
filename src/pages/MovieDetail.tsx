@@ -7,18 +7,23 @@ import {
   PlayIcon,
 } from '@heroicons/react/24/solid';
 import { Button } from '@/components/ui/button';
-import type { MovieDetail } from '@/types/movie';
 import MovieDetailSkeleton from '@/components/MovieDetail/MovieDetailSkeleton';
-import { useFetch } from '@/hooks/useFetch';
-import { api } from '@/api/api';
+import { useMovieDetail } from '@/hooks/useMovies';
 
 export default function MovieDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { data: movie, status } = useFetch<MovieDetail>(api.detail(id!), !!id);
+  const movieId = id ? parseInt(id, 10) : 0;
+  
+  // 새로운 훅 사용
+  const { data: movie, isLoading, isError } = useMovieDetail(movieId, {
+    enabled: !!movieId,
+  });
 
-  if (status === 'loading') return <MovieDetailSkeleton />;
-  if (status === 'error') return <p>영화 정보를 불러오지 못했습니다.</p>;
+  console.log('🎬 MovieDetail rendered:', { movieId, movie, isLoading, isError });
+
+  if (isLoading) return <MovieDetailSkeleton />;
+  if (isError) return <p>영화 정보를 불러오지 못했습니다.</p>;
   if (!movie) return <p className="text-lg">영화 정보를 찾을 수 없습니다.</p>;
 
   return (
