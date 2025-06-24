@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { ApiResponse } from '../api/client';
+import type { ApiResponse } from '@/types/api';
 
 type ApiStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -27,7 +27,7 @@ export function useApi<T>(
   options: UseApiOptions = {}
 ): UseApiResult<T> {
   const { enabled = true, cacheTime = 5 * 60 * 1000, staleTime = 30 * 1000 } = options;
-  
+
   const [data, setData] = useState<T | null>(null);
   const [status, setStatus] = useState<ApiStatus>('idle');
   const [error, setError] = useState<Error | null>(null);
@@ -35,7 +35,7 @@ export function useApi<T>(
 
   const refetch = useCallback(() => {
     console.log('🔄 Refetch triggered for:', cacheKey);
-    setRefetchCount(prev => prev + 1);
+    setRefetchCount((prev) => prev + 1);
   }, [cacheKey]);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export function useApi<T>(
       // 캐시 확인
       const now = Date.now();
       const cached = cache.get(cacheKey);
-      
+
       if (cached && now - cached.timestamp < staleTime) {
         console.log('💾 Using cached data for:', cacheKey);
         setData(cached.data as T);
@@ -61,11 +61,11 @@ export function useApi<T>(
 
       setStatus('loading');
       setError(null);
-      
+
       try {
         console.log('🌐 Executing API call for:', cacheKey);
         const response = await apiCall();
-        
+
         if (!mounted) return;
 
         if (response.success && response.data) {
@@ -74,7 +74,7 @@ export function useApi<T>(
             data: response.data,
             timestamp: now,
           });
-          
+
           // 캐시 만료 스케줄링
           setTimeout(() => {
             console.log('🗑️ Cache expired for:', cacheKey);
@@ -93,7 +93,7 @@ export function useApi<T>(
         if (!mounted || (err instanceof DOMException && err.name === 'AbortError')) {
           return;
         }
-        
+
         const error = err instanceof Error ? err : new Error('Unknown error');
         console.error('💥 API call error for:', cacheKey, error);
         setError(error);
@@ -108,17 +108,20 @@ export function useApi<T>(
     };
   }, [apiCall, cacheKey, enabled, cacheTime, staleTime, refetchCount]);
 
-  const computedStates = useMemo(() => ({
-    isLoading: status === 'loading',
-    isSuccess: status === 'success', 
-    isError: status === 'error',
-  }), [status]);
+  const computedStates = useMemo(
+    () => ({
+      isLoading: status === 'loading',
+      isSuccess: status === 'success',
+      isError: status === 'error',
+    }),
+    [status]
+  );
 
   return {
     data,
     status,
     error,
     refetch,
-    ...computedStates
+    ...computedStates,
   };
-} 
+}
