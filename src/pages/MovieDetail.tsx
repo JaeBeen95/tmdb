@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   ChevronLeftIcon,
   CalendarIcon,
@@ -7,30 +7,30 @@ import {
   PlayIcon,
 } from '@heroicons/react/24/solid';
 import { Button } from '@/components/ui/button';
-
-const dummyMovie = {
-  id: 1,
-  title: '아바타: 물의 길',
-  original_title: 'Avatar: The Way of Water',
-  poster_path: 'https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg',
-  backdrop_path: 'https://image.tmdb.org/t/p/w1280/s16H6tpK2utvwDtzZ8Qy4qm5Emw.jpg',
-  vote_average: 8.2,
-  release_date: '2022-12-16',
-  runtime: 192,
-  overview: '설리 가족의 이야기와 그들을 따라다니는 문제, 생존을 위한 전투를 그린 서사.',
-  genres: [{ name: '모험' }, { name: 'SF' }, { name: '액션' }],
-};
+import MovieDetailSkeleton from '@/components/MovieDetail/MovieDetailSkeleton';
+import { useMovieDetail } from '@/hooks/useMovies';
 
 export default function MovieDetail() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const movieId = id ? parseInt(id, 10) : 0;
+  
+  // 새로운 훅 사용
+  const { data: movie, isLoading, isError } = useMovieDetail(movieId, {
+    enabled: !!movieId,
+  });
 
-  const movie = dummyMovie;
+  console.log('🎬 MovieDetail rendered:', { movieId, movie, isLoading, isError });
+
+  if (isLoading) return <MovieDetailSkeleton />;
+  if (isError) return <p>영화 정보를 불러오지 못했습니다.</p>;
+  if (!movie) return <p className="text-lg">영화 정보를 찾을 수 없습니다.</p>;
 
   return (
     <div className="bg-[#0d253f] text-white min-h-screen">
       <div className="relative h-[60vh] w-full overflow-hidden">
         <img
-          src={movie.backdrop_path}
+          src={`https://image.tmdb.org/t/p/w500${movie.backdrop_path}`}
           alt="backdrop"
           className="w-full h-full object-cover opacity-30"
         />
@@ -45,7 +45,7 @@ export default function MovieDetail() {
         <div className="absolute inset-0 flex items-end p-8 bg-gradient-to-t from-[#0d253f] to-transparent">
           <div className="flex gap-8 max-w-6xl w-full mx-auto items-end">
             <img
-              src={movie.poster_path}
+              src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
               alt={movie.title}
               className="w-40 sm:w-48 rounded-lg shadow-lg border-2 border-white/10"
             />
@@ -63,13 +63,13 @@ export default function MovieDetail() {
                 </div>
                 <div className="flex items-center gap-1 text-yellow-400">
                   <StarIcon className="w-4 h-4" />
-                  <span>{movie.vote_average}</span>
+                  <span>{movie.vote_average.toFixed(1)}</span>
                 </div>
               </div>
               <div className="mt-3 flex gap-2 flex-wrap">
-                {movie.genres.map((g, i) => (
-                  <span key={i} className="px-3 py-1 bg-teal-700/60 text-sm rounded-full">
-                    {g.name}
+                {movie.genres?.map((genre) => (
+                  <span key={genre.id} className="px-3 py-1 bg-teal-700/60 text-sm rounded-full">
+                    {genre.name}
                   </span>
                 ))}
               </div>
