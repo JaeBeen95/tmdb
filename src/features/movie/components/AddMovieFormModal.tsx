@@ -133,6 +133,7 @@ const TextInput = ({
 
 const FileUploadInput = ({
   label,
+  fileName,
   onFileChange,
 }: {
   label: string;
@@ -153,11 +154,8 @@ const FileUploadInput = ({
       >
         <div className="text-center">
           <PhotoIcon className="mx-auto h-12 w-12 text-gray-500" />
-          <div className="mt-4 flex text-sm leading-6 text-gray-400">
-            <span className="relative rounded-md font-semibold text-teal-500">
-              이미지를 업로드해 주세요
-            </span>
-          </div>
+          <p className="mt-4 text-sm font-semibold text-teal-500">이미지를 업로드해 주세요</p>
+          <p className="mt-1 text-xs text-gray-500 truncate max-w-xs mx-auto">{fileName}</p>
         </div>
         <input
           id="file-upload"
