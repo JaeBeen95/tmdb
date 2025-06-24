@@ -1,43 +1,76 @@
+import { useState, useCallback, type FormEvent } from 'react';
 import { useModal } from '@/hooks/useModal';
 import { usePopularMovies } from '@/features/movie/hooks/useMovies';
-import { useAddMovieForm } from '@/features/movie/hooks/useAddMovieForm';
-import MovieSkeletonCard from '@/features/movie/components/MovieCardSkeleton';
 import MovieListLayout from '@/features/movie/components/MovieListLayout';
 import MovieListView from '@/features/movie/components/MovieListView';
+import MovieSkeletonCard from '@/features/movie/components/MovieCardSkeleton';
 import AddMovieFormModal from '@/features/movie/components/AddMovieFormModal';
 import { Button } from '@/components/ui/button';
+import { GENRES_LIST } from '@/features/movie/constants';
 
 export default function MovieList() {
   const { data: movieList, isLoading, isError } = usePopularMovies({ page: 1 });
   const { isModalOpen, openModal, closeModal } = useModal();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {
-    formData,
-    isSubmitting,
-    posterFile,
-    errors,
-    handleFieldChange,
-    handleGenreChange,
-    handleFileChange,
-    handleSubmit,
-    handleBlur,
-    reset,
-  } = useAddMovieForm({
-    onSubmit: async (submitData) => {
-      console.log(submitData);
+  // const {
+  //   formData,
+  //   isSubmitting,
+  //   posterFile,
+  //   errors,
+  //   handleFieldChange,
+  //   handleGenreChange,
+  //   handleFileChange,
+  //   handleSubmit,
+  //   handleBlur,
+  //   reset,
+  // } = useAddMovieForm({
+  //   onSubmit: async (submitData) => {
+  //     console.log(submitData);
+  //     closeModal();
+  //   },
+  // });
+
+  const handleSubmit = useCallback(
+    async (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+
+      const formElement = e.currentTarget;
+      const formData = new FormData(formElement);
+
+      const submitData = {
+        title: formData.get('title'),
+        original_title: formData.get('original_title'),
+        release_date: formData.get('release_date'),
+        runtime: formData.get('runtime'),
+        genres: formData.getAll('genres').map((id) => {
+          const foundGenre = GENRES_LIST.find((g) => g.id === Number(id));
+          return foundGenre || { id: Number(id), name: 'Unknown' };
+        }),
+        posterFile:
+          (formElement.elements.namedItem('poster') as HTMLInputElement).files?.[0] || null,
+      };
+
+      console.log('서버로 제출할 최종 데이터:', submitData);
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      setIsSubmitting(false);
       closeModal();
     },
-  });
+    [closeModal]
+  );
 
-  const handleOpenModal = () => {
-    reset();
-    openModal();
-  };
+  // const handleOpenModal = () => {
+  //   reset();
+  //   openModal();
+  // };
 
-  const handleCancel = () => {
-    closeModal();
-    reset();
-  };
+  // const handleCancel = () => {
+  //   closeModal();
+  //   reset();
+  // };
 
   if (isLoading) {
     return (
@@ -74,7 +107,7 @@ export default function MovieList() {
   return (
     <MovieListLayout>
       <div className="text-right mb-4">
-        <Button onClick={handleOpenModal} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={openModal} className="bg-blue-600 hover:bg-blue-700">
           새 영화 추가
         </Button>
       </div>
@@ -82,16 +115,17 @@ export default function MovieList() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <AddMovieFormModal
-            formData={formData}
             isLoading={isSubmitting}
-            posterFileName={posterFile?.name || '이미지를 업로드해 주세요'}
-            errors={errors}
-            onFieldChange={handleFieldChange}
-            onGenreChange={handleGenreChange}
-            onFileChange={handleFileChange}
             onSubmit={handleSubmit}
-            onBlur={handleBlur}
-            onCancel={handleCancel}
+            onClose={closeModal}
+            // formData={formData}
+            // posterFileName={posterFile?.name || '이미지를 업로드해 주세요'}
+            // errors={errors}
+            // onFieldChange={handleFieldChange}
+            // onGenreChange={handleGenreChange}
+            // onFileChange={handleFileChange}
+            // onBlur={handleBlur}
+            // onCancel={handleCancel}
           />
         </div>
       )}
