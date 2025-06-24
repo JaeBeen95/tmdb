@@ -7,16 +7,20 @@ import {
   PlayIcon,
 } from '@heroicons/react/24/solid';
 import { Button } from '@/components/ui/button';
-import MovieDetailSkeleton from '@/components/MovieDetail/MovieDetailSkeleton';
-import { useMovieDetail } from '@/hooks/useMovies';
+import MovieDetailSkeleton from '@/features/movie/components/MovieDetailSkeleton';
+import { useMovieDetail } from '@/features/movie/hooks/useMovies';
 
 export default function MovieDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const movieId = id ? parseInt(id, 10) : 0;
-  
+
   // 새로운 훅 사용
-  const { data: movie, isLoading, isError } = useMovieDetail(movieId, {
+  const {
+    data: movie,
+    isLoading,
+    isError,
+  } = useMovieDetail(movieId, {
     enabled: !!movieId,
   });
 

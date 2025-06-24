@@ -1,1 +1,4 @@
-export const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+export const MOVIE_API_PATH = {
+  POPULAR: '/movie/popular',
+  DETAIL: (id: number | string) => `/movie/${id}`,
+};

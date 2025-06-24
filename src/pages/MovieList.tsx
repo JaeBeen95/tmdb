@@ -1,5 +1,5 @@
-import MovieListView from '@/components/MovieList/MovieListView';
-import { usePopularMovies } from '@/hooks/useMovies';
+import MovieListView from '@/features/movie/components/MovieListView';
+import { usePopularMovies } from '@/features/movie/hooks/useMovies';
 
 export default function MovieList() {
   const { data: movieList, isLoading, isError } = usePopularMovies({ page: 1 });
@@ -19,7 +19,7 @@ export default function MovieList() {
 
       <main className="max-w-7xl mx-auto py-10">
         <h2 className="text-2xl font-semibold mb-6">인기 영화</h2>
-        <MovieListView status={status} movieList={movieList || []} />
+        <MovieListView status={status} movieList={movieList?.results || []} />
       </main>
     </div>
   );

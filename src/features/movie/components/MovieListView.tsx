@@ -1,6 +1,6 @@
-import MovieCard from '@/components/MovieCard';
-import MovieSkeletonCard from '@/components/MovieList/MovieCardSkeleton';
-import type { Movie } from '@/types/movie';
+import MovieCard from '@/features/movie/components/MovieCard';
+import MovieSkeletonCard from '@/features/movie/components/MovieCardSkeleton';
+import type { Movie } from '@/features/movie/types/movie';
 
 interface MovieListViewProps {
   status: 'idle' | 'loading' | 'error' | 'success';

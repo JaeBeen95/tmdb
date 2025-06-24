@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
-import { useApi } from './useApi';
-import * as movieApi from '../api/movie';
+import * as movieApi from '@/features/movie/api';
+import { useApi } from '@/hooks/useApi';
+import type { MovieDetail, MovieList } from '@/features/movie/types/movie';
 
 interface UseMoviesOptions {
   enabled?: boolean;
@@ -18,13 +19,13 @@ interface UseMovieDetailOptions {
  */
 export function usePopularMovies(options: UseMoviesOptions = {}) {
   const { enabled = true, page = 1, language = 'ko-KR' } = options;
-  
+
   const apiCall = useCallback(
     () => movieApi.getPopularMovies({ page, language }),
     [page, language]
   );
-  
-  return useApi(apiCall, `popular-movies-${page}-${language}`, { enabled });
+
+  return useApi<MovieList>(apiCall, `popular-movies-${page}-${language}`, { enabled });
 }
 
 /**
@@ -32,14 +33,14 @@ export function usePopularMovies(options: UseMoviesOptions = {}) {
  */
 export function useMovieDetail(movieId: number, options: UseMovieDetailOptions = {}) {
   const { enabled = true, language = 'ko-KR' } = options;
-  
+
   const apiCall = useCallback(
     () => movieApi.getMovieDetail(movieId, language),
     [movieId, language]
   );
-  
-  return useApi(apiCall, `movie-detail-${movieId}-${language}`, { 
+
+  return useApi<MovieDetail>(apiCall, `movie-detail-${movieId}-${language}`, {
     enabled: enabled && !!movieId,
     staleTime: 10 * 60 * 1000, // 10분 캐싱
   });
-} 
+}

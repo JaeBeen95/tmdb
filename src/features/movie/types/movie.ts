@@ -9,13 +9,20 @@ export interface Movie {
 
 export interface MovieDetail extends Movie {
   backdrop_path: string | null;
-  poster_path: string | null;
   runtime: number;
-  genres: genre[];
+  genres: Genre[];
   overview: string;
 }
 
-interface genre {
+export interface MovieList {
+  id: number;
+  page: number;
+  results: Movie[];
+  total_pages: number;
+  total_results: number;
+}
+
+interface Genre {
   id: number;
   name: string;
 }
