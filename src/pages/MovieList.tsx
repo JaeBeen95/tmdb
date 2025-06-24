@@ -15,10 +15,12 @@ export default function MovieList() {
     formData,
     isSubmitting,
     posterFile,
+    errors,
     handleFieldChange,
     handleGenreChange,
     handleFileChange,
     handleSubmit,
+    handleBlur,
     reset,
   } = useAddMovieForm({
     onSubmit: async (submitData) => {
@@ -83,10 +85,12 @@ export default function MovieList() {
             formData={formData}
             isLoading={isSubmitting}
             posterFileName={posterFile?.name || '이미지를 업로드해 주세요'}
+            errors={errors}
             onFieldChange={handleFieldChange}
             onGenreChange={handleGenreChange}
             onFileChange={handleFileChange}
             onSubmit={handleSubmit}
+            onBlur={handleBlur}
             onCancel={handleCancel}
           />
         </div>

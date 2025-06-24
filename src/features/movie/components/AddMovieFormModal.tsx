@@ -1,30 +1,33 @@
-import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowPathIcon, PhotoIcon } from '@heroicons/react/24/solid';
 import { GENRES_LIST } from '@/features/movie/constants';
-import type { Genre, MovieFormData } from '@/features/movie/types/movie';
+import type { FormErrors, Genre, MovieFormData } from '@/features/movie/types/movie';
 
-export interface MovieFormProps {
+export interface AddMovieFormModalProps {
   formData: MovieFormData;
   isLoading: boolean;
   posterFileName: string;
+  errors: FormErrors;
   onFieldChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onGenreChange: (genre: Genre) => void;
   onFileChange: (file: File | null) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onCancel: () => void;
+  onBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
-export default function MovieForm({
+export default function AddMovieFormModal({
   formData,
   isLoading,
   posterFileName,
+  errors,
   onFieldChange,
   onGenreChange,
   onFileChange,
   onSubmit,
   onCancel,
-}: MovieFormProps) {
+  onBlur,
+}: AddMovieFormModalProps) {
   return (
     <div className="bg-[#0d253f] p-8 rounded-xl text-white w-full max-w-2xl shadow-2xl border border-sky-900/50">
       <h2 className="text-2xl font-bold mb-6 pb-4 border-b border-white/10">새 영화 추가</h2>
@@ -35,6 +38,8 @@ export default function MovieForm({
             name="title"
             value={formData.title}
             onChange={onFieldChange}
+            onBlur={onBlur}
+            error={errors.title}
             required
           />
           <TextInput
@@ -42,6 +47,7 @@ export default function MovieForm({
             name="original_title"
             value={formData.original_title}
             onChange={onFieldChange}
+            onBlur={onBlur}
           />
           <TextInput
             label="개봉일"
@@ -49,6 +55,8 @@ export default function MovieForm({
             type="date"
             value={formData.release_date}
             onChange={onFieldChange}
+            onBlur={onBlur}
+            error={errors.release_date}
             required
           />
           <TextInput
@@ -57,8 +65,11 @@ export default function MovieForm({
             type="number"
             value={formData.runtime.toString()}
             onChange={onFieldChange}
+            onBlur={onBlur}
+            error={errors.runtime}
             required
           />
+
           <div className="md:col-span-2">
             <FileUploadInput
               label="포스터 이미지"
@@ -66,6 +77,7 @@ export default function MovieForm({
               onFileChange={onFileChange}
             />
           </div>
+
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-300 mb-2">장르</label>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
@@ -84,9 +96,9 @@ export default function MovieForm({
                 </label>
               ))}
             </div>
+            {errors.genres && <p className="mt-2 text-sm text-red-500">{errors.genres}</p>}
           </div>
         </div>
-
         <div className="flex justify-end gap-4 pt-6 border-t border-white/20 mt-8">
           <Button
             type="button"
@@ -118,16 +130,20 @@ export default function MovieForm({
 
 const TextInput = ({
   label,
+  error,
   ...props
-}: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
+}: { label: string; error?: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
   <div>
     <label htmlFor={props.name} className="block text-sm font-medium text-gray-300 mb-2">
       {label}
     </label>
     <input
       {...props}
-      className="w-full bg-[#0c2d48] border border-slate-700 rounded-md shadow-sm px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+      className={`w-full bg-[#0c2d48] border rounded-md shadow-sm px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 ${
+        error ? 'border-red-500 focus:ring-red-500' : 'border-slate-700 focus:ring-blue-500'
+      }`}
     />
+    {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
   </div>
 );
 

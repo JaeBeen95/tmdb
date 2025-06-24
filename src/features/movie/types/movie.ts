@@ -34,3 +34,5 @@ export interface MovieFormData {
   runtime: number;
   genres: Genre[];
 }
+
+export type FormErrors = Partial<Record<keyof MovieFormData, string>>;
