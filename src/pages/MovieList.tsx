@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useModal } from '@/hooks/useModal';
 import { usePopularMovies } from '@/features/movie/hooks/useMovies';
 import MovieSkeletonCard from '@/features/movie/components/MovieCardSkeleton';
 import MovieListLayout from '@/features/movie/components/MovieListLayout';
@@ -17,8 +18,8 @@ const initialFormData: MovieFormData = {
 
 export default function MovieList() {
   const { data: movieList, isLoading, isError } = usePopularMovies({ page: 1 });
+  const { isModalOpen, openModal, closeModal } = useModal();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<MovieFormData>(initialFormData);
   const [posterFile, setPosterFile] = useState<File | null>(null);
@@ -45,10 +46,10 @@ export default function MovieList() {
   }, []);
 
   const handleCancel = useCallback(() => {
-    setIsModalOpen(false);
+    closeModal();
     setFormData(initialFormData);
     setPosterFile(null);
-  }, []);
+  }, [closeModal]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -92,7 +93,7 @@ export default function MovieList() {
   return (
     <MovieListLayout>
       <div className="text-right mb-4">
-        <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={openModal} className="bg-blue-600 hover:bg-blue-700">
           새 영화 추가
         </Button>
       </div>
@@ -102,7 +103,7 @@ export default function MovieList() {
           <AddMovieFormModal
             formData={formData}
             isLoading={isSubmitting}
-            posterFileName={posterFile?.name || '파일을 선택하거나 드래그하세요'}
+            posterFileName={posterFile?.name || '이미지를 선택하세요'}
             onFieldChange={handleFieldChange}
             onGenreChange={handleGenreChange}
             onFileChange={handleFileChange}
