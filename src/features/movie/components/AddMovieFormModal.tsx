@@ -1,3 +1,5 @@
+import { GENRES_LIST } from '@/features/movie/constants';
+import { PhotoIcon } from '@heroicons/react/24/solid';
 import type { Genre, MovieFormData } from '@/features/movie/types/movie';
 
 export interface MovieFormProps {
@@ -11,7 +13,13 @@ export interface MovieFormProps {
   onCancel: () => void;
 }
 
-export default function AddMovieFormModal({ formData, onFieldChange }: MovieFormProps) {
+export default function AddMovieFormModal({
+  formData,
+  posterFileName,
+  onFieldChange,
+  onGenreChange,
+  onFileChange,
+}: MovieFormProps) {
   return (
     <div className="bg-[#0d253f] p-8 rounded-xl text-white w-full max-w-2xl shadow-2xl border border-sky-900/50">
       <h2 className="text-2xl font-bold mb-6 pb-4 border-b border-white/10">새 영화 추가</h2>
@@ -46,6 +54,34 @@ export default function AddMovieFormModal({ formData, onFieldChange }: MovieForm
             onChange={onFieldChange}
             required
           />
+
+          <div className="md:col-span-2">
+            <FileUploadInput
+              label="포스터 이미지"
+              fileName={posterFileName}
+              onFileChange={onFileChange}
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-300 mb-2">장르</label>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+              {GENRES_LIST.map((genre) => (
+                <label
+                  key={genre.id}
+                  className="flex items-center space-x-2 cursor-pointer p-2 rounded-md hover:bg-sky-900/50 transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded bg-gray-700 border-gray-600 text-teal-500 focus:ring-teal-500"
+                    checked={formData.genres.some((g) => g.id === genre.id)}
+                    onChange={() => onGenreChange(genre)}
+                  />
+                  <span className="text-sm">{genre.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
       </form>
     </div>
@@ -66,3 +102,47 @@ const TextInput = ({
     />
   </div>
 );
+
+const FileUploadInput = ({
+  label,
+  fileName,
+  onFileChange,
+}: {
+  label: string;
+  fileName: string;
+  onFileChange: (file: File | null) => void;
+}) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    onFileChange(file);
+  };
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-300 mb-2">{label}</label>
+      <label
+        htmlFor="file-upload"
+        className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-600 px-6 py-10 cursor-pointer hover:border-gray-500 hover:bg-slate-800/20 transition-colors"
+      >
+        <div className="text-center">
+          <PhotoIcon className="mx-auto h-12 w-12 text-gray-500" />
+          <div className="mt-4 flex text-sm leading-6 text-gray-400">
+            <span className="relative rounded-md font-semibold text-teal-500">
+              파일을 업로드 하세요
+            </span>
+          </div>
+          <p className="text-xs leading-5 text-gray-500 truncate max-w-xs mx-auto mt-2">
+            {fileName}
+          </p>
+        </div>
+        <input
+          id="file-upload"
+          name="file-upload"
+          type="file"
+          className="sr-only"
+          onChange={handleFileChange}
+        />
+      </label>
+    </div>
+  );
+};
