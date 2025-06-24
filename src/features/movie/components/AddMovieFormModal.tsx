@@ -1,29 +1,34 @@
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { ArrowPathIcon, PhotoIcon } from '@heroicons/react/24/solid';
 import { GENRES_LIST } from '@/features/movie/constants';
-import { PhotoIcon } from '@heroicons/react/24/solid';
 import type { Genre, MovieFormData } from '@/features/movie/types/movie';
 
 export interface MovieFormProps {
   formData: MovieFormData;
-  onFieldChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isLoading: boolean;
   posterFileName: string;
+  onFieldChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onGenreChange: (genre: Genre) => void;
   onFileChange: (file: File | null) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onCancel: () => void;
 }
 
-export default function AddMovieFormModal({
+export default function MovieForm({
   formData,
+  isLoading,
   posterFileName,
   onFieldChange,
   onGenreChange,
   onFileChange,
+  onSubmit,
+  onCancel,
 }: MovieFormProps) {
   return (
     <div className="bg-[#0d253f] p-8 rounded-xl text-white w-full max-w-2xl shadow-2xl border border-sky-900/50">
       <h2 className="text-2xl font-bold mb-6 pb-4 border-b border-white/10">새 영화 추가</h2>
-      <form className="space-y-6">
+      <form onSubmit={onSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
           <TextInput
             label="영화 제목"
@@ -54,7 +59,6 @@ export default function AddMovieFormModal({
             onChange={onFieldChange}
             required
           />
-
           <div className="md:col-span-2">
             <FileUploadInput
               label="포스터 이미지"
@@ -62,7 +66,6 @@ export default function AddMovieFormModal({
               onFileChange={onFileChange}
             />
           </div>
-
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-300 mb-2">장르</label>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
@@ -82,6 +85,31 @@ export default function AddMovieFormModal({
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="flex justify-end gap-4 pt-6 border-t border-white/20 mt-8">
+          <Button
+            type="button"
+            variant="outline"
+            className="bg-transparent border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white"
+            onClick={onCancel}
+            disabled={isLoading}
+          >
+            취소
+          </Button>
+          <Button
+            type="submit"
+            className="bg-teal-600 text-white hover:bg-teal-700"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <ArrowPathIcon className="w-5 h-5 mr-2 animate-spin" /> 추가 중...
+              </>
+            ) : (
+              '추가하기'
+            )}
+          </Button>
         </div>
       </form>
     </div>
@@ -105,7 +133,6 @@ const TextInput = ({
 
 const FileUploadInput = ({
   label,
-  fileName,
   onFileChange,
 }: {
   label: string;
@@ -128,12 +155,9 @@ const FileUploadInput = ({
           <PhotoIcon className="mx-auto h-12 w-12 text-gray-500" />
           <div className="mt-4 flex text-sm leading-6 text-gray-400">
             <span className="relative rounded-md font-semibold text-teal-500">
-              파일을 업로드 하세요
+              이미지를 업로드해 주세요
             </span>
           </div>
-          <p className="text-xs leading-5 text-gray-500 truncate max-w-xs mx-auto mt-2">
-            {fileName}
-          </p>
         </div>
         <input
           id="file-upload"

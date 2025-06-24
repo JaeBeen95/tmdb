@@ -1,18 +1,57 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { usePopularMovies } from '@/features/movie/hooks/useMovies';
 import MovieSkeletonCard from '@/features/movie/components/MovieCardSkeleton';
 import MovieListLayout from '@/features/movie/components/MovieListLayout';
 import MovieListView from '@/features/movie/components/MovieListView';
-import { usePopularMovies } from '@/features/movie/hooks/useMovies';
-import { Button } from '@/components/ui/button';
 import AddMovieFormModal from '@/features/movie/components/AddMovieFormModal';
+import { Button } from '@/components/ui/button';
+import type { Genre, MovieFormData } from '@/features/movie/types/movie';
+
+const initialFormData: MovieFormData = {
+  title: '',
+  original_title: '',
+  release_date: '',
+  runtime: 0,
+  genres: [],
+};
 
 export default function MovieList() {
   const { data: movieList, isLoading, isError } = usePopularMovies({ page: 1 });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<MovieFormData>(initialFormData);
+  const [posterFile, setPosterFile] = useState<File | null>(null);
 
-  const handleFormSubmit = () => {
+  const handleFieldChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'number' ? parseInt(value, 10) || 0 : value,
+    }));
+  }, []);
+
+  const handleGenreChange = useCallback((genre: Genre) => {
+    setFormData((prev) => {
+      const newGenres = prev.genres.some((g) => g.id === genre.id)
+        ? prev.genres.filter((g) => g.id !== genre.id)
+        : [...prev.genres, genre];
+      return { ...prev, genres: newGenres };
+    });
+  }, []);
+
+  const handleFileChange = useCallback((file: File | null) => {
+    setPosterFile(file);
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    setIsModalOpen(false);
+    setFormData(initialFormData);
+    setPosterFile(null);
+  }, []);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsSubmitting(true);
 
     console.log('전송');
@@ -53,10 +92,7 @@ export default function MovieList() {
   return (
     <MovieListLayout>
       <div className="text-right mb-4">
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-teal-600 text-white hover:bg-teal-700"
-        >
+        <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
           새 영화 추가
         </Button>
       </div>
@@ -64,9 +100,14 @@ export default function MovieList() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <AddMovieFormModal
+            formData={formData}
             isLoading={isSubmitting}
-            onSubmit={handleFormSubmit}
-            onClose={() => setIsModalOpen(false)}
+            posterFileName={posterFile?.name || '파일을 선택하거나 드래그하세요'}
+            onFieldChange={handleFieldChange}
+            onGenreChange={handleGenreChange}
+            onFileChange={handleFileChange}
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
           />
         </div>
       )}
