@@ -1,10 +1,22 @@
+import { useState } from 'react';
 import MovieSkeletonCard from '@/features/movie/components/MovieCardSkeleton';
 import MovieListLayout from '@/features/movie/components/MovieListLayout';
 import MovieListView from '@/features/movie/components/MovieListView';
 import { usePopularMovies } from '@/features/movie/hooks/useMovies';
+import { Button } from '@/components/ui/button';
+import AddMovieFormModal from '@/features/movie/components/AddMovieFormModal';
 
 export default function MovieList() {
   const { data: movieList, isLoading, isError } = usePopularMovies({ page: 1 });
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFormSubmit = () => {
+    setIsSubmitting(true);
+
+    console.log('전송');
+  };
 
   if (isLoading) {
     return (
@@ -40,7 +52,24 @@ export default function MovieList() {
 
   return (
     <MovieListLayout>
+      <div className="text-right mb-4">
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-teal-600 text-white hover:bg-teal-700"
+        >
+          새 영화 추가
+        </Button>
+      </div>
       <MovieListView movieList={movieList.results} />
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <AddMovieFormModal
+            isLoading={isSubmitting}
+            onSubmit={handleFormSubmit}
+            onClose={() => setIsModalOpen(false)}
+          />
+        </div>
+      )}
     </MovieListLayout>
   );
 }

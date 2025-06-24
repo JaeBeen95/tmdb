@@ -22,7 +22,15 @@ export interface MovieList {
   total_results: number;
 }
 
-interface Genre {
+export interface Genre {
   id: number;
   name: string;
+}
+
+export interface MovieFormData {
+  title: string;
+  original_title: string;
+  release_date: string;
+  runtime: number;
+  genres: Genre[];
 }
